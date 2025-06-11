@@ -88,4 +88,64 @@ public function invite(Request $request, $teamId)
 
     return redirect()->route('dashboard')->with('success', 'Response recorded.');
 }
+    public function removeMember(Request $request, $teamId)
+{
+    $team = \App\Models\Team::findOrFail($teamId);
+    if ($team->owner_email !== Auth::user()->email) abort(403);
+
+    $request->validate(['member_email' => 'required|email']);
+
+    \App\Models\TeamMember::where('team_id', $teamId)
+        ->where('member_email', $request->member_email)
+        ->delete();
+
+    return back()->with('success', 'Member removed!');
+}
+    public function leaveTeam(Request $request)
+{
+    $member = \App\Models\TeamMember::where('member_email', Auth::user()->email)->first();
+    if ($member) {
+        $team = $member->team;
+        if ($team && $team->owner_email === Auth::user()->email) {
+            return back()->with('error', 'Owners cannot leave their own team. Delete the team instead.');
+        }
+        $member->delete();
+        return back()->with('success', 'You left the team.');
+    }
+    return back()->with('error', 'You are not a member of any team.');
+}
+    public function delete(Request $request, $teamId)
+{
+    $team = \App\Models\Team::findOrFail($teamId);
+    if ($team->owner_email !== Auth::user()->email) abort(403);
+
+    $team->delete();
+    return redirect()->route('teams.index')->with('success', 'Team deleted.');
+}
+public function addMember(Request $request, $teamId)
+{
+    $request->validate([
+        'member_email' => 'required|email',
+    ]);
+
+    $team = \App\Models\Team::findOrFail($teamId);
+
+
+    $alreadyInTeam = \App\Models\TeamMember::where('member_email', $request->member_email)->exists();
+
+    if ($alreadyInTeam) {
+
+        return back()->with('error', 'User is already in a team.');
+    } else {
+        \App\Models\TeamMember::create([
+            'team_id' => $teamId,
+            'member_email' => $request->member_email,
+        ]);
+        return back()->with('success', 'Member added to team!');
+    }
+}
+
+
+
+
 }

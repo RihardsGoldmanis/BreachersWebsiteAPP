@@ -34,5 +34,12 @@ return [
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
     ],
+    'breachers' => [
+    'base'   => env('TRIANGLE_API_BASE'),
+    'token'  => env('TRIANGLE_API_TOKEN'),
+    'secret' => env('TRIANGLE_API_AUTH'),
+    'id'     => env('TRIANGLE_API_ID'),
+],
+
 
 ];
